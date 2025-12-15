@@ -131,7 +131,7 @@
 
     <div class="w-full max-w-7xl main-dashboard-container glass-panel rounded-[2.5rem] flex flex-col md:flex-row relative">
 
-        <aside class="w-full md:w-80 bg-white/40 border-r border-white/50 flex flex-col p-6 z-20">
+        <aside class="w-full md:w-80 bg-white/40 border-r border-white/50 flex flex-col p-6 z-20 overflow-y-auto hide-scrollbar">
             <div class="flex items-center gap-3 mb-10 pl-2">
                 <div class="w-10 h-10 rounded-xl bg-gray-900 text-white flex items-center justify-center text-lg shadow-xl">
                     <i class="fa-solid fa-layer-group"></i>
@@ -145,7 +145,7 @@
                 
                 <div onclick="selectAdvisor('Cristina')" id="card-Cristina" class="advisor-card active cursor-pointer p-4 rounded-2xl flex items-center gap-4">
                     <div class="relative">
-                        <img src="img/cristina.png" onerror="this.src='https://ui-avatars.com/api/?name=Cristina&background=random'" class="profile-img w-14 h-14 rounded-full bg-purple-100 p-0.5 border border-white shadow-sm">
+                        <img src="img/cristina.png" alt="Cristina" class="profile-img w-14 h-14 rounded-full bg-purple-100 p-0.5 border border-white shadow-sm">
                         <div class="status-dot absolute bottom-0 right-0 w-3.5 h-3.5 bg-gray-300 rounded-full border-2 border-white transition-colors"></div>
                     </div>
                     <div>
@@ -156,7 +156,7 @@
 
                 <div onclick="selectAdvisor('Julio')" id="card-Julio" class="advisor-card cursor-pointer p-4 rounded-2xl flex items-center gap-4">
                     <div class="relative">
-                        <img src="img/julio.png" onerror="this.src='https://ui-avatars.com/api/?name=Julio&background=random'" class="profile-img w-14 h-14 rounded-full bg-blue-100 p-0.5 border border-white shadow-sm">
+                        <img src="img/julio.png" alt="Julio" class="profile-img w-14 h-14 rounded-full bg-blue-100 p-0.5 border border-white shadow-sm">
                         <div class="status-dot absolute bottom-0 right-0 w-3.5 h-3.5 bg-gray-300 rounded-full border-2 border-white transition-colors"></div>
                     </div>
                     <div>
@@ -167,7 +167,7 @@
 
                 <div onclick="selectAdvisor('Steven')" id="card-Steven" class="advisor-card cursor-pointer p-4 rounded-2xl flex items-center gap-4">
                     <div class="relative">
-                        <img src="img/steven.png" onerror="this.src='https://ui-avatars.com/api/?name=Steven&background=random'" class="profile-img w-14 h-14 rounded-full bg-orange-100 p-0.5 border border-white shadow-sm">
+                        <img src="img/steven.png" alt="Steven" class="profile-img w-14 h-14 rounded-full bg-orange-100 p-0.5 border border-white shadow-sm">
                         <div class="status-dot absolute bottom-0 right-0 w-3.5 h-3.5 bg-gray-300 rounded-full border-2 border-white transition-colors"></div>
                     </div>
                     <div>
@@ -178,14 +178,21 @@
 
             </div>
 
-            <div class="mt-6 pt-6 border-t border-gray-200/50">
-                <div class="bg-gradient-theme p-4 rounded-2xl text-white relative overflow-hidden shadow-lg">
+            <div class="mt-auto pt-6 border-t border-gray-200/50">
+                <div class="bg-gradient-to-br from-orange-500 to-orange-600 p-5 rounded-2xl text-white relative overflow-hidden shadow-lg shadow-orange-500/30 ring-1 ring-white/20 group">
                     <div class="relative z-10">
-                        <p class="text-xs opacity-90 mb-1">Jornada Reducida</p>
-                        <h4 class="font-bold text-xl leading-tight">Rotación Semanal</h4>
-                        <p class="text-[10px] mt-2 opacity-80">1 día a la semana por asesor</p>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="bg-white/20 p-1.5 rounded-lg text-xs text-white ring-1 ring-white/30"><i class="fa-solid fa-business-time"></i></span>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-orange-100/80">Regla Operativa</p>
+                        </div>
+                        <h4 class="font-bold text-xl leading-tight mb-1 text-white">Jornada Reducida</h4>
+                        <p class="text-sm text-orange-50 font-medium">1 día de 5.5h a la semana.</p>
+                        <div class="mt-3 text-xs text-orange-100/70 flex items-center gap-1">
+                            <i class="fa-regular fa-calendar-check"></i> Rotación Semanal
+                        </div>
                     </div>
-                    <i class="fa-solid fa-clock absolute -bottom-2 -right-2 text-6xl opacity-20 rotate-12"></i>
+                    <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-orange-400 rounded-full blur-3xl opacity-40 group-hover:opacity-60 transition duration-500"></div>
+                    <i class="fa-solid fa-clock-rotate-left absolute bottom-2 right-2 text-white/10 text-5xl -rotate-12"></i>
                 </div>
             </div>
         </aside>
@@ -311,7 +318,7 @@
             { Cristina: 'T1', Julio: 'T2', Steven: 'T3' },
         ];
         
-        // CRÍTICO: Plan de Reducción donde TODOS tienen 1 día por semana.
+        // Plan de Reducción donde TODOS tienen 1 día por semana.
         const WEEKLY_REDUCTION_PLAN = [
             // Sem 0 (Ene 1-4): Semana corta, no aplicamos reducciones estrictas o manuales.
             { Cristina: null, Julio: null, Steven: null }, 
