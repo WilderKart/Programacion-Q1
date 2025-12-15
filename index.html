@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sameco Premium Scheduler | Q1 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CORE STYLES & THEME VARIABLES --- */
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f3f4f6;
+            transition: background 0.5s ease;
+            overflow: hidden; 
+        }
+
+        /* Temas de Color por Asesor */
+        body.theme-cristina { background-image: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%); --primary: #8b5cf6; --secondary: #d946ef; } /* Púrpura/Rosa */
+        body.theme-julio { background-image: linear-gradient(120deg, #06b6d4 0%, #10b981 100%); --primary: #14b8a6; --secondary: #0d9488; } /* Verde Teal */
+        body.theme-steven { background-image: linear-gradient(120deg, #f6d365 0%, #fda085 100%); --primary: #f59e0b; --secondary: #f97316; } /* Naranja/Ámbar */
+
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+        }
+
+        /* Sidebar Item Styles */
+        .advisor-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+        }
+        .advisor-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255,255,255, 0.6);
+        }
+        .advisor-card.active {
+            background: white;
+            border-color: var(--primary);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .advisor-card.active .status-dot {
+            background-color: #10b981; 
+            box-shadow: 0 0 0 3px white;
+        }
+
+        /* Pestañas de Meses Activas */
+        .month-tab.active {
+            position: relative;
+        }
+        .month-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+
+        /* Custom Scrollbar */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Gradient Text */
+        .text-gradient {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .bg-gradient-theme {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        /* Modal Styles */
+        dialog::backdrop {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px);
+        }
+        
+        /* Imagen Profile Fix */
+        .profile-img {
+            object-fit: cover;
+            object-position: top;
+        }
+    </style>
+</head>
+<body class="h-screen flex items-center justify-center p-4 md:p-8 theme-cristina" id="app-body">
+
+    <div class="w-full max-w-7xl h-full md:h-[90vh] glass-panel rounded-[2.5rem] flex flex-col md:flex-row overflow-hidden relative">
+
+        <aside class="w-full md:w-80 bg-white/40 border-r border-white/50 flex flex-col p-6 z-20">
+            <div class="flex items-center gap-3 mb-10 pl-2">
+                <div class="w-10 h-10 rounded-xl bg-gray-900 text-white flex items-center justify-center text-lg shadow-xl">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight text-gray-800">Sameco<span class="text-indigo-600">Plan</span></h1>
+            </div>
+
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 px-2">Seleccionar Asesor</p>
+
+            <div class="space-y-4 flex-1 overflow-y-auto hide-scrollbar">
+                
+                <div onclick="selectAdvisor('Cristina')" id="card-Cristina" class="advisor-card active cursor-pointer p-4 rounded-2xl flex items-center gap-4">
+                    <div class="relative">
+                        <img src="img/cristina.png" onerror="this.src='https://ui-avatars.com/api/?name=Cristina&background=random'" class="profile-img w-14 h-14 rounded-full bg-purple-100 p-0.5 border border-white shadow-sm">
+                        <div class="status-dot absolute bottom-0 right-0 w-3.5 h-3.5 bg-gray-300 rounded-full border-2 border-white transition-colors"></div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800">Cristina</h3>
+                        <p class="text-xs text-gray-500 font-medium">Asesor Comercial</p>
+                    </div>
+                </div>
+
+                <div onclick="selectAdvisor('Julio')" id="card-Julio" class="advisor-card cursor-pointer p-4 rounded-2xl flex items-center gap-4">
+                    <div class="relative">
+                        <img src="img/julio.png" onerror="this.src='https://ui-avatars.com/api/?name=Julio&background=random'" class="profile-img w-14 h-14 rounded-full bg-blue-100 p-0.5 border border-white shadow-sm">
+                        <div class="status-dot absolute bottom-0 right-0 w-3.5 h-3.5 bg-gray-300 rounded-full border-2 border-white transition-colors"></div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800">Julio</h3>
+                        <p class="text-xs text-gray-500 font-medium">Asesor Comercial</p>
+                    </div>
+                </div>
+
+                <div onclick="selectAdvisor('Steven')" id="card-Steven" class="advisor-card cursor-pointer p-4 rounded-2xl flex items-center gap-4">
+                    <div class="relative">
+                        <img src="img/steven.png" onerror="this.src='https://ui-avatars.com/api/?name=Steven&background=random'" class="profile-img w-14 h-14 rounded-full bg-orange-100 p-0.5 border border-white shadow-sm">
+                        <div class="status-dot absolute bottom-0 right-0 w-3.5 h-3.5 bg-gray-300 rounded-full border-2 border-white transition-colors"></div>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800">Steven</h3>
+                        <p class="text-xs text-gray-500 font-medium">Asesor Comercial</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-gray-200/50">
+                <div class="bg-gradient-theme p-4 rounded-2xl text-white relative overflow-hidden shadow-lg">
+                    <div class="relative z-10">
+                        <p class="text-xs opacity-90 mb-1">Jornada Reducida</p>
+                        <h4 class="font-bold text-xl leading-tight">Rotación Semanal</h4>
+                        <p class="text-[10px] mt-2 opacity-80">1 día a la semana por asesor</p>
+                    </div>
+                    <i class="fa-solid fa-clock absolute -bottom-2 -right-2 text-6xl opacity-20 rotate-12"></i>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col relative overflow-hidden">
+            
+            <header class="h-20 px-8 flex justify-between items-center border-b border-white/30 bg-white/20 backdrop-blur-sm z-10">
+                <div class="flex gap-2 bg-white/50 p-1 rounded-xl">
+                    <button onclick="changeMonth('Enero')" id="btn-Enero" class="month-tab px-5 py-2 rounded-lg text-sm font-bold shadow-sm bg-white text-gray-800 transition-all">Enero</button>
+                    <button onclick="changeMonth('Febrero')" id="btn-Febrero" class="month-tab px-5 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-800 transition-all">Febrero</button>
+                    <button onclick="changeMonth('Marzo')" id="btn-Marzo" class="month-tab px-5 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-800 transition-all">Marzo</button>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-xs text-gray-500 uppercase font-bold">Viendo agenda de</p>
+                        <p class="text-lg font-bold text-gray-800 leading-none" id="header-name">Cristina</p>
+                    </div>
+                    <button class="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center text-gray-400 hover:text-gray-600 transition">
+                        <i class="fa-regular fa-bell"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="flex-1 overflow-y-auto p-6 md:p-10 hide-scrollbar relative">
+                
+                <div class="flex flex-col md:flex-row justify-between items-end md:items-center mb-8 gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 mb-1" id="week-display">Semana 1</h2>
+                        <div class="flex items-center gap-2 text-gray-500">
+                            <i class="fa-solid fa-calendar-week"></i>
+                            <span class="text-sm font-medium" id="date-range-display">Enero 1 - Enero 7</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <button onclick="openMonthModal()" class="px-6 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-semibold hover:bg-gray-800 transition shadow-lg flex items-center gap-2">
+                            <i class="fa-solid fa-table"></i> Ver Mes Completo
+                        </button>
+
+                        <div class="flex bg-white p-1 rounded-xl shadow-sm border border-gray-100">
+                            <button onclick="changeWeek(-1)" class="w-10 h-10 hover:bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 transition">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <div class="w-px h-6 bg-gray-200 my-auto mx-1"></div>
+                            <button onclick="changeWeek(1)" class="w-10 h-10 hover:bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 transition">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="weekly-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 pb-10">
+                    </div>
+
+            </div>
+        </main>
+    </div>
+
+    <dialog id="month-modal" class="rounded-3xl shadow-2xl p-0 w-full max-w-4xl backdrop:bg-gray-900/50 open:animate-fade-in">
+        <div class="glass-panel flex flex-col max-h-[80vh]">
+            <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-white/50">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800">Programación Mensual</h3>
+                    <p class="text-sm text-gray-500" id="modal-subtitle">Enero 2026 - Cristina</p>
+                </div>
+                <button onclick="closeMonthModal()" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="overflow-y-auto p-6">
+                <table class="w-full text-sm text-left text-gray-600">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50/80 sticky top-0">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 rounded-l-lg">Fecha</th>
+                            <th scope="col" class="px-6 py-3">Día</th>
+                            <th scope="col" class="px-6 py-3">Horario</th>
+                            <th scope="col" class="px-6 py-3">Almuerzo</th>
+                            <th scope="col" class="px-6 py-3 rounded-r-lg">Nota</th>
+                        </tr>
+                    </thead>
+                    <tbody id="month-table-body" class="bg-white">
+                        </tbody>
+                </table>
+            </div>
+            
+            <div class="p-4 bg-gray-50/80 text-center text-xs text-gray-400">
+                Mostrando información exclusiva para el colaborador seleccionado.
+            </div>
+        </div>
+    </dialog>
+
+    <script>
+        // --- 1. DATOS Y LÓGICA DE TURNOS ---
+        
+        // Funciòn para calcular la hora de entrada de la reducciòn
+        function calculateReductionTime(festivos) {
+            // Hora de apertura 8:30 AM (510 minutos desde medianoche)
+            const baseMinutes = 8 * 60 + 30; 
+            const totalReduction = festivos * 40; 
+            const entryMinutes = baseMinutes + totalReduction;
+            
+            const hours = Math.floor(entryMinutes / 60);
+            const minutes = entryMinutes % 60;
+            
+            const paddedHours = String(hours).padStart(2, '0');
+            const paddedMinutes = String(minutes).padStart(2, '0');
+            
+            return `${paddedHours}:${paddedMinutes}`; // Formato HH:MM
+        }
+        
+        // Define los turnos de almuerzo base
+        const LUNCH_TURNS = {
+            T1: "11:30-12:30", // T1: Sale Primero
+            T2: "12:30-1:30",  // T2
+            T3: "1:30-2:30"    // T3: Sale Último (Turno fijo para Asesor R)
+        };
+
+        // Asignación de Turnos de Almuerzo Semanal (Rotativa)
+        // La rotación indica el turno BASE de la semana.
+        // T1: 11:30-12:30, T2: 12:30-1:30, T3: 1:30-2:30
+        const WEEKLY_LUNCH_ROTATION = [
+            // [0] Semana Enero 1-4 (T1: Cristina, T2: Julio, T3: Steven)
+            { Cristina: 'T1', Julio: 'T2', Steven: 'T3' }, 
+            // [1] Semana Enero 5-11 (T1: Julio, T2: Steven, T3: Cristina)
+            { Cristina: 'T3', Julio: 'T1', Steven: 'T2' }, 
+            // [2] Semana Enero 12-18
+            { Cristina: 'T2', Julio: 'T3', Steven: 'T1' }, 
+            // [3] Semana Enero 19-25
+            { Cristina: 'T3', Julio: 'T1', Steven: 'T2' }, 
+            // [4] Semana Enero 26-31
+            { Cristina: 'T1', Julio: 'T2', Steven: 'T3' },
+            // [5] Semana Febrero 1-7
+            { Cristina: 'T2', Julio: 'T3', Steven: 'T1' },
+            // [6] Semana Febrero 8-14
+            { Cristina: 'T3', Julio: 'T1', Steven: 'T2' },
+            // [7] Semana Febrero 15-21
+            { Cristina: 'T1', Julio: 'T2', Steven: 'T3' },
+            // [8] Semana Febrero 22-28
+            { Cristina: 'T2', Julio: 'T3', Steven: 'T1' },
+            // [9] Semana Marzo 1-7
+            { Cristina: 'T3', Julio: 'T1', Steven: 'T2' },
+            // [10] Semana Marzo 8-14
+            { Cristina: 'T1', Julio: 'T2', Steven: 'T3' },
+            // [11] Semana Marzo 15-21
+            { Cristina: 'T2', Julio: 'T3', Steven: 'T1' },
+            // [12] Semana Marzo 22-28
+            { Cristina: 'T3', Julio: 'T1', Steven: 'T2' },
+            // [13] Semana Marzo 29-31
+            { Cristina: 'T1', Julio: 'T2', Steven: 'T3' },
+        ];
+        
+        // Asignación de Día de Reducción Semanal (Rotativa)
+        const WEEKLY_REDUCTION_DAY = [
+            // [0] Semana Enero 1-4
+            { day: null, advisor: null },
+            // [1] Semana Enero 5-11
+            { day: 'Mar', advisor: 'Steven' }, 
+            // [2] Semana Enero 12-18
+            { day: 'Mié', advisor: 'Steven' }, 
+            // [3] Semana Enero 19-25
+            { day: 'Mié', advisor: 'Cristina' }, 
+            // [4] Semana Enero 26-31
+            { day: 'Jue', advisor: 'Julio' },
+            // [5] Semana Febrero 1-7
+            { day: 'Vie', advisor: 'Steven' },
+            // [6] Semana Febrero 8-14
+            { day: 'Mié', advisor: 'Cristina' },
+            // [7] Semana Febrero 15-21
+            { day: 'Jue', advisor: 'Julio' },
+            // [8] Semana Febrero 22-28
+            { day: 'Vie', advisor: 'Steven' },
+            // [9] Semana Marzo 1-7
+            { day: 'Mié', advisor: 'Cristina' },
+            // [10] Semana Marzo 8-14
+            { day: 'Jue', advisor: 'Julio' },
+            // [11] Semana Marzo 15-21
+            { day: 'Vie', advisor: 'Steven' },
+            // [12] Semana Marzo 22-28
+            { day: 'Mié', advisor: 'Cristina' }, 
+            // [13] Semana Marzo 29-31
+            { day: 'Jue', advisor: 'Julio' },
+        ];
+
+
+        // Función que genera el horario final con la lógica de desplazamiento de almuerzos
+        function generateSchedule(monthData) {
+            const ADVISORS = ['Cristina', 'Julio', 'Steven'];
+            const LUNCH_SLOTS = ['T1', 'T2', 'T3'];
+            const formattedData = [];
+            
+            // Recorrer los días para asociarlos a una semana lógica
+            let weekCounter = -1; 
+
+            for (let i = 0; i < monthData.length; i++) {
+                const day = monthData[i];
+
+                // --- DETERMINACIÓN DE SEMANA LÓGICA ---
+                if (i === 0 || (monthData[i-1] && monthData[i-1].w === 'Dom')) {
+                    weekCounter++;
+                }
+
+                const weeklyLunch = WEEKLY_LUNCH_ROTATION[weekCounter] || WEEKLY_LUNCH_ROTATION[0];
+                const reductionDayInfo = WEEKLY_REDUCTION_DAY[weekCounter] || {day: null, advisor: null};
+                
+                let festivosInWeek = 0;
+                let currentWeekDays = [];
+                // Reconstruir la semana (máx 7 días) para contar festivos
+                for (let j = 0; j < 7 && (i - (day.w === 'Dom' ? 0 : (ADVISORS.indexOf(ADVISORS.find(a => monthData[i - j] && monthData[i-j].w === 'Lun')) >= 0 ? 0 : 7)) + j) < monthData.length; j++) {
+                     if (monthData[i - j] && monthData[i - j].type === 'Festivo') festivosInWeek++;
+                }
+                
+                const newDay = {...day};
+
+                if (day.type !== 'Festivo' && day.type !== 'Descanso') {
+                    
+                    const isReductionDay = day.w === reductionDayInfo.day && day.type !== 'Sabado';
+                    const reductionAdvisor = isReductionDay ? reductionDayInfo.advisor : null;
+                    const entryTime = isReductionDay ? calculateReductionTime(festivosInWeek) : "08:30";
+                    
+                    // Encontrar el asesor con el turno T3 BASE para intercambiar
+                    let t3Advisor = null;
+                    ADVISORS.forEach(adv => {
+                        if (weeklyLunch[adv] === 'T3') t3Advisor = adv;
+                    });
+                    
+                    // 2. Asignar Horarios
+                    ADVISORS.forEach(adv => {
+                        const baseTurno = weeklyLunch[adv];
+                        const newInfo = { in: "08:30", out: day.w === 'Sáb' ? "16:00" : "17:30", lunch: LUNCH_TURNS[baseTurno], reduction: false };
+
+                        if (adv === reductionAdvisor) {
+                            // PRIORIDAD 1: ASESOR R (Siempre T3)
+                            newInfo.in = entryTime;
+                            newInfo.lunch = LUNCH_TURNS.T3;
+                            newInfo.reduction = true;
+                        } else if (isReductionDay && adv === t3Advisor && baseTurno !== 'T3') {
+                            // Caso raro: Si el asesor T3 base NO es el R, mantiene T3
+                            newInfo.lunch = LUNCH_TURNS.T3;
+                        } else if (isReductionDay && baseTurno !== 'T3' && reductionAdvisor !== adv) {
+                            // PRIORIDAD 2: Asesor T1 o T2 que NO es R, si el R no estaba en T3, no se mueve.
+                             newInfo.lunch = LUNCH_TURNS[baseTurno]; 
+                        }
+                        
+                        // Lógica de Intercambio (Solo si el asesor R NO estaba en T3)
+                        if (isReductionDay && reductionAdvisor === adv && baseTurno !== 'T3') {
+                            // El asesor R estaba en T1 o T2. El asesor T3 base debe recibir el turno T1/T2 desocupado.
+                            
+                            // Revertir el almuerzo del asesor T3 base al turno T1/T2 que desocupó el R
+                            if (adv === reductionAdvisor) {
+                                // Aquí se ajusta el asesor T3 a tomar el turno que R liberó.
+                                // Se necesita iterar de nuevo para ajustar al T3.
+                            }
+                        }
+                        
+                        // LÓGICA SIMPLIFICADA (Intercambio):
+                        if (isReductionDay) {
+                            if (adv === reductionAdvisor) {
+                                newInfo.in = entryTime;
+                                newInfo.lunch = LUNCH_TURNS.T3; // R siempre T3
+                                newInfo.reduction = true;
+                            } else if (weeklyLunch[reductionAdvisor] === baseTurno) {
+                                // Este asesor debe tomar el turno BASE de R (si R no era T3)
+                                if (weeklyLunch[reductionAdvisor] !== 'T3') {
+                                     // Si el asesor T3 es este, intercambia su turno base con el de R
+                                    if (weeklyLunch[adv] === 'T3') {
+                                        newInfo.lunch = LUNCH_TURNS[weeklyLunch[reductionAdvisor]];
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Finalmente, asegurar que T3 siempre lo tenga R, si R no es T3, nadie se mueve.
+                        if (isReductionDay) {
+                            if (adv === reductionAdvisor) {
+                                newInfo.lunch = LUNCH_TURNS.T3;
+                                newInfo.reduction = true;
+                                newInfo.in = entryTime;
+                            } else if (weeklyLunch[adv] === 'T3' && weeklyLunch[reductionAdvisor] !== 'T3') {
+                                // El que tenía T3 BASE, toma el turno BASE de R
+                                newInfo.lunch = LUNCH_TURNS[weeklyLunch[reductionAdvisor]];
+                            } else if (weeklyLunch[adv] === weeklyLunch[reductionAdvisor] && weeklyLunch[reductionAdvisor] !== 'T3') {
+                                // El que tenía el turno que R quería, toma el T3
+                                newInfo.lunch = LUNCH_TURNS.T3;
+                            }
+                        }
+                        
+                        // Si R no es T3: Solo el asesor R toma T3, y el T3 base toma el turno de R.
+                        if (isReductionDay && weeklyLunch[reductionAdvisor] !== 'T3') {
+                            if (adv === reductionAdvisor) { // R toma T3
+                                newInfo.in = entryTime;
+                                newInfo.lunch = LUNCH_TURNS.T3;
+                                newInfo.reduction = true;
+                            } else if (adv === t3Advisor) { // El que tiene T3 BASE, toma el turno que R liberó
+                                newInfo.lunch = LUNCH_TURNS[weeklyLunch[reductionAdvisor]]; 
+                            }
+                        } else if (isReductionDay && weeklyLunch[reductionAdvisor] === 'T3') {
+                             // Si R ya tenía T3 BASE, nadie se mueve.
+                             if (adv === reductionAdvisor) {
+                                newInfo.in = entryTime;
+                                newInfo.reduction = true;
+                            }
+                        }
+                        
+                        newDay[adv] = newInfo;
+                    });
+                }
+                
+                formattedData.push(newDay);
+            }
+            return formattedData;
+        }
+
+        // Programación Final aplicando la lógica de turnos
+        const scheduleDB = {
+            "Enero": generateSchedule([
+                // [0] Semana Parcial (Jueves 1 Enero Festivo) - T1: Cri, T2: Jul, T3: Ste. No reducción
+                { d:1, w:"Jue", type:"Festivo", label:"Año Nuevo" },
+                { d:2, w:"Vie", type:"Normal" },
+                { d:3, w:"Sáb", type:"Sabado" },
+                { d:4, w:"Dom", type:"Descanso" },
+                // [1] Semana 1 Completa (5-11) - T1: Jul, T2: Ste, T3: Cri. Reducción: Ste (Mar)
+                { d:5, w:"Lun", type:"Normal" },
+                { d:6, w:"Mar", type:"Normal" },
+                { d:7, w:"Mié", type:"Normal" },
+                { d:8, w:"Jue", type:"Normal" },
+                { d:9, w:"Vie", type:"Normal" },
+                { d:10, w:"Sáb", type:"Sabado" },
+                { d:11, w:"Dom", type:"Descanso" },
+                // [2] Semana 2 Completa (12-18) - T1: Ste, T2: Cri, T3: Jul. Reducción: Ste (Mié)
+                { d:12, w:"Lun", type:"Festivo", label:"Reyes Magos" },
+                { d:13, w:"Mar", type:"Normal" },
+                { d:14, w:"Mié", type:"Normal" },
+                { d:15, w:"Jue", type:"Normal" },
+                { d:16, w:"Vie", type:"Normal" },
+                { d:17, w:"Sáb", type:"Sabado" },
+                { d:18, w:"Dom", type:"Descanso" },
+                // [3] Semana 3 Completa (19-25) - T1: Jul, T2: Ste, T3: Cri. Reducción: Cri (Mié)
+                { d:19, w:"Lun", type:"Normal" },
+                { d:20, w:"Mar", type:"Normal" },
+                { d:21, w:"Mié", type:"Normal" },
+                { d:22, w:"Jue", type:"Normal" },
+                { d:23, w:"Vie", type:"Normal" },
+                { d:24, w:"Sáb", type:"Sabado" },
+                { d:25, w:"Dom", type:"Descanso" },
+                // [4] Semana 4 (26-31) - T1: Cri, T2: Jul, T3: Ste. Reducción: Jul (Jue)
+                { d:26, w:"Lun", type:"Normal" },
+                { d:27, w:"Mar", type:"Normal" },
+                { d:28, w:"Mié", type:"Normal" },
+                { d:29, w:"Jue", type:"Normal" },
+                { d:30, w:"Vie", type:"Normal" },
+                { d:31, w:"Sáb", type:"Sabado" },
+            ]),
+            "Febrero": generateSchedule([
+                // [5] Semana 1 (1-7) - T1: Ste, T2: Cri, T3: Jul. Reducción: Ste (Vie)
+                { d:1, w:"Dom", type:"Descanso" },
+                { d:2, w:"Lun", type:"Normal" },
+                { d:3, w:"Mar", type:"Normal" },
+                { d:4, w:"Mié", type:"Normal" },
+                { d:5, w:"Jue", type:"Normal" },
+                { d:6, w:"Vie", type:"Normal" },
+                { d:7, w:"Sáb", type:"Sabado" },
+                // [6] Semana 2 (8-14) - T1: Jul, T2: Ste, T3: Cri. Reducción: Cri (Mié)
+                { d:8, w:"Dom", type:"Descanso" },
+                { d:9, w:"Lun", type:"Normal" },
+                { d:10, w:"Mar", type:"Normal" },
+                { d:11, w:"Mié", type:"Normal" },
+                { d:12, w:"Jue", type:"Normal" },
+                { d:13, w:"Vie", type:"Normal" },
+                { d:14, w:"Sáb", type:"Sabado" },
+                // [7] Semana 3 (15-21) - T1: Cri, T2: Jul, T3: Ste. Reducción: Jul (Jue)
+                { d:15, w:"Dom", type:"Descanso" },
+                { d:16, w:"Lun", type:"Normal" },
+                { d:17, w:"Mar", type:"Normal" },
+                { d:18, w:"Mié", type:"Normal" },
+                { d:19, w:"Jue", type:"Normal" },
+                { d:20, w:"Vie", type:"Normal" },
+                { d:21, w:"Sáb", type:"Sabado" },
+                // [8] Semana 4 (22-28) - T1: Ste, T2: Cri, T3: Jul. Reducción: Ste (Vie)
+                { d:22, w:"Dom", type:"Descanso" },
+                { d:23, w:"Lun", type:"Normal" },
+                { d:24, w:"Mar", type:"Normal" },
+                { d:25, w:"Mié", type:"Normal" },
+                { d:26, w:"Jue", type:"Normal" },
+                { d:27, w:"Vie", type:"Normal" },
+                { d:28, w:"Sáb", type:"Sabado" },
+            ]),
+            "Marzo": generateSchedule([
+                // [9] Semana 1 (1-7) - T1: Jul, T2: Ste, T3: Cri. Reducción: Cri (Vie)
+                { d:1, w:"Dom", type:"Descanso" },
+                { d:2, w:"Lun", type:"Normal" },
+                { d:3, w:"Mar", type:"Normal" },
+                { d:4, w:"Mié", type:"Normal" },
+                { d:5, w:"Jue", type:"Normal" },
+                { d:6, w:"Vie", type:"Normal" },
+                { d:7, w:"Sáb", type:"Sabado" },
+                // [10] Semana 2 (8-14) - T1: Cri, T2: Jul, T3: Ste. Reducción: Jul (Jue)
+                { d:8, w:"Dom", type:"Descanso" },
+                { d:9, w:"Lun", type:"Normal" },
+                { d:10, w:"Mar", type:"Normal" },
+                { d:11, w:"Mié", type:"Normal" },
+                { d:12, w:"Jue", type:"Normal" },
+                { d:13, w:"Vie", type:"Normal" },
+                { d:14, w:"Sáb", type:"Sabado" },
+                // [11] Semana 3 (15-21) - T1: Ste, T2: Cri, T3: Jul. Reducción: Ste (Vie)
+                { d:15, w:"Dom", type:"Descanso" },
+                { d:16, w:"Lun", type:"Normal" },
+                { d:17, w:"Mar", type:"Normal" },
+                { d:18, w:"Mié", type:"Normal" },
+                { d:19, w:"Jue", type:"Normal" },
+                { d:20, w:"Vie", type:"Normal" },
+                { d:21, w:"Sáb", type:"Sabado" },
+                // [12] Semana 4 (22-28) - T1: Jul, T2: Ste, T3: Cri. Reducción: Cri (Mié)
+                { d:22, w:"Dom", type:"Descanso" },
+                { d:23, w:"Lun", type:"Festivo", label:"Día de San José" },
+                { d:24, w:"Mar", type:"Normal" },
+                { d:25, w:"Mié", type:"Normal" },
+                { d:26, w:"Jue", type:"Normal" },
+                { d:27, w:"Vie", type:"Normal" },
+                { d:28, w:"Sáb", type:"Sabado" },
+                // [13] Semana 5 (29-31) - T1: Cri, T2: Jul, T3: Ste. Reducción: Jul (Jue)
+                { d:29, w:"Dom", type:"Descanso" },
+                { d:30, w:"Lun", type:"Normal" },
+                { d:31, w:"Mar", type:"Normal" },
+            ])
+        };
+
+        // --- 4. GESTIÓN DE ESTADO ---
+        let state = {
+            advisor: 'Cristina', 
+            month: 'Enero',
+            weekIndex: 0 
+        };
+
+        // --- 5. FUNCIONES DE RENDERIZADO Y LÓGICA DE VISTA ---
+
+        function selectAdvisor(name) {
+            state.advisor = name;
+            
+            // 1. Tema
+            document.body.className = `h-screen flex items-center justify-center p-4 md:p-8 theme-${name.toLowerCase()}`;
+            
+            // 2. Sidebar Active
+            document.querySelectorAll('.advisor-card').forEach(card => card.classList.remove('active'));
+            document.getElementById(`card-${name}`).classList.add('active');
+
+            // 3. Header Text
+            document.getElementById('header-name').innerText = name;
+            document.getElementById('modal-subtitle').innerText = `${state.month} 2026 - ${name}`;
+
+            // 4. Render
+            renderWeekView();
+        }
+
+        function changeMonth(month) {
+            state.month = month;
+            state.weekIndex = 0; 
+
+            ['Enero', 'Febrero', 'Marzo'].forEach(m => {
+                const btn = document.getElementById(`btn-${m}`);
+                btn.classList.remove('active');
+
+                if (m === month) {
+                    btn.classList.add('active');
+                    btn.className = "month-tab px-5 py-2 rounded-lg text-sm font-bold shadow-sm bg-white text-gray-800 transition-all active";
+                } else {
+                    btn.className = "month-tab px-5 py-2 rounded-lg text-sm font-semibold text-gray-500 hover:text-gray-800 transition-all";
+                }
+            });
+
+            document.getElementById('modal-subtitle').innerText = `${month} 2026 - ${state.advisor}`;
+            renderWeekView();
+        }
+
+        function changeWeek(direction) {
+            const data = scheduleDB[state.month];
+            const maxWeeks = Math.ceil(data.length / 7) - 1;
+            
+            let newIndex = state.weekIndex + direction;
+            if (newIndex < 0) return; 
+            if (newIndex > maxWeeks) return; 
+
+            state.weekIndex = newIndex;
+            renderWeekView();
+        }
+
+        function renderWeekView() {
+            const grid = document.getElementById('weekly-grid');
+            grid.innerHTML = ""; 
+
+            const monthData = scheduleDB[state.month];
+            const startIdx = state.weekIndex * 7;
+            const endIdx = startIdx + 7;
+            const weekData = monthData.slice(startIdx, endIdx);
+
+            document.getElementById('week-display').innerText = `Semana ${state.weekIndex + 1}`;
+            if(weekData.length > 0) {
+                const first = weekData[0].d;
+                const last = weekData[weekData.length - 1].d;
+                document.getElementById('date-range-display').innerText = `${state.month} ${first} - ${state.month} ${last}`;
+            }
+
+            weekData.forEach((day, index) => {
+                const card = document.createElement('div');
+                card.className = "glass-panel p-5 rounded-3xl flex flex-col justify-between h-56 relative overflow-hidden group hover:shadow-xl transition-all animate-fade-in";
+                card.style.animationDelay = `${index * 0.05}s`;
+
+                let contentHTML = "";
+                let borderClass = "";
+                let iconClass = "";
+                let bgDecoration = "";
+
+                if (day.type === 'Festivo') {
+                    borderClass = "border-l-4 border-red-400";
+                    iconClass = "fa-umbrella-beach text-red-400";
+                    contentHTML = `
+                        <div class="mt-auto">
+                            <span class="px-3 py-1 bg-red-100 text-red-600 rounded-full text-xs font-bold uppercase tracking-wide">Festivo</span>
+                            <p class="mt-2 text-lg text-red-800 font-bold">${day.label}</p>
+                        </div>
+                    `;
+                } else if (day.type === 'Descanso') {
+                    borderClass = "border-l-4 border-gray-300";
+                    iconClass = "fa-bed text-gray-400";
+                    contentHTML = `
+                        <div class="mt-auto">
+                             <span class="px-3 py-1 bg-gray-200 text-gray-500 rounded-full text-xs font-bold uppercase tracking-wide">Descanso</span>
+                        </div>
+                    `;
+                } else {
+                    const info = day[state.advisor];
+                    if (info) {
+                        const isReduction = info.reduction;
+                        borderClass = isReduction ? "border-l-4 border-indigo-500 bg-indigo-50/30" : "border-l-4 border-emerald-400";
+                        iconClass = isReduction ? "fa-star text-indigo-500" : "fa-briefcase text-emerald-500";
+                        
+                        let reductionLabel = "";
+                        if(isReduction) {
+                            bgDecoration = `<div class="absolute -right-6 -top-6 w-20 h-20 bg-gradient-theme opacity-20 rounded-full blur-xl"></div>`;
+                            
+                            let labelText = "Jornada Reducida (11:00 AM)";
+                            if (info.in !== "11:00" && info.in !== "08:30") labelText = `Reducción (Ajuste por Festivo)`;
+                            
+                            reductionLabel = `<span class="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">${labelText}</span>`;
+                        }
+
+                        contentHTML = `
+                            <div class="space-y-3 mt-2">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-gray-400 font-bold uppercase">Entrada</span>
+                                    <span class="text-lg font-bold text-gray-800">${info.in}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-gray-400 font-bold uppercase">Salida</span>
+                                    <span class="text-lg font-bold text-gray-800">${info.out}</span>
+                                </div>
+                                <div class="pt-3 border-t border-gray-200/50 flex items-center gap-2">
+                                    <i class="fa-solid fa-utensils text-gray-400 text-xs"></i>
+                                    <span class="text-sm font-medium text-gray-600">Alm: ${info.lunch}</span>
+                                </div>
+                                ${reductionLabel}
+                            </div>
+                        `;
+                    }
+                }
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2 relative z-10">
+                        <div>
+                            <h4 class="text-3xl font-bold text-gray-800">${day.d}</h4>
+                            <p class="text-sm font-bold uppercase tracking-wider text-gray-400">${day.w}</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm text-lg ${iconClass}">
+                            <i class="fa-solid ${iconClass.split(' ')[0]}"></i>
+                        </div>
+                    </div>
+                    ${contentHTML}
+                    ${bgDecoration}
+                `;
+                
+                card.classList.add(...borderClass.split(' '));
+                grid.appendChild(card);
+            });
+        }
+
+        // --- MODAL LOGIC ---
+        function openMonthModal() {
+            const modal = document.getElementById('month-modal');
+            const tbody = document.getElementById('month-table-body');
+            tbody.innerHTML = "";
+
+            const fullData = scheduleDB[state.month];
+            
+            fullData.forEach(day => {
+                let rowHTML = "";
+                let baseClass = "border-b hover:bg-gray-50 transition";
+                
+                if(day.type === 'Festivo') {
+                    rowHTML = `<td colspan="5" class="px-6 py-4 font-bold text-red-500 bg-red-50 text-center">FESTIVO: ${day.label}</td>`;
+                } else if(day.type === 'Descanso') {
+                    rowHTML = `<td colspan="5" class="px-6 py-4 italic text-gray-400 bg-gray-50 text-center">Día de Descanso</td>`;
+                } else {
+                    const info = day[state.advisor];
+                    if(info) {
+                        const style = info.reduction ? 'font-bold text-indigo-600' : 'text-gray-700';
+                        let note = "-";
+                        if(info.reduction) {
+                            note = info.in === "11:00" ? "★ Reducción (11:00 AM)" : `★ Reducción (Ajustada ${info.in})`;
+                        } else if(day.type === 'Sabado') {
+                            note = "Sábado (6.5h)";
+                        }
+                        
+                        rowHTML = `
+                            <td class="px-6 py-4 font-medium">${day.d} / ${day.w}</td>
+                            <td class="px-6 py-4">${day.w}</td>
+                            <td class="px-6 py-4 ${style}">${info.in} - ${info.out}</td>
+                            <td class="px-6 py-4">${info.lunch}</td>
+                            <td class="px-6 py-4 text-xs">${note}</td>
+                        `;
+                    }
+                }
+
+                const tr = document.createElement('tr');
+                tr.className = baseClass;
+                tr.innerHTML = rowHTML;
+                tbody.appendChild(tr);
+            });
+
+            modal.showModal();
+        }
+
+        function closeMonthModal() {
+            document.getElementById('month-modal').close();
+        }
+
+        // --- INIT ---
+        selectAdvisor('Cristina'); 
+    </script>
+</body>
+</html>
